@@ -81,26 +81,26 @@
 
 #let Remove-Locals-Base = prooftree(
   axiom($$),
-  rule(label: "Remove-Locals-Base", $dot sect.dot Delta = dot$),
+  rule(label: "Remove-Locals-Base", $dot triangle.filled.small.l Delta = dot$),
 )
 
 #let Remove-Locals-Keep = prooftree(
   axiom($root(p) = x$),
   axiom($Delta_1 inangle(x) = alpha beta$),
-  axiom($Delta sect.dot Delta_1 = Delta'$),
-  rule(n:3, label: "Remove-Locals-Keep", $p : alpha beta, Delta sect.dot Delta_1 = p : alpha beta, Delta'$),
+  axiom($Delta triangle.filled.small.l Delta_1 = Delta'$),
+  rule(n:3, label: "Remove-Locals-Keep", $p : alpha beta, Delta triangle.filled.small.l Delta_1 = p : alpha beta, Delta'$),
 )
 
 #let Remove-Locals-Discard = prooftree(
   axiom($root(p) = x$),
   axiom($x in.not Delta_1$),
-  axiom($Delta sect.dot Delta_1 = Delta'$),
-  rule(n:3, label: "Remove-Locals-Keep", $p : alpha beta, Delta sect.dot Delta_1 = Delta'$),
+  axiom($Delta triangle.filled.small.l Delta_1 = Delta'$),
+  rule(n:3, label: "Remove-Locals-Keep", $p : alpha beta, Delta triangle.filled.small.l Delta_1 = Delta'$),
 )
 
 #let Unify = prooftree(
   axiom($Delta_1 lub Delta_2 = Delta_lub$),
-  axiom($Delta_lub sect.dot Delta = Delta'$),
+  axiom($Delta_lub triangle.filled.small.l Delta = Delta'$),
   rule(n:2, label: "Unify", $unify(Delta, Delta_1, Delta_2) = Delta'$),
 )
 

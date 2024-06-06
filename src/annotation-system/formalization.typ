@@ -123,10 +123,13 @@ If $p_1 subset.sq p_2$ holds, we say that
 
 == Unification
 
-- $Delta_1 lub Delta_2$ is the pointwise lub of $Delta_1$ and $Delta_2$
+- $Delta_1 lub Delta_2$ is the pointwise lub of $Delta_1$ and $Delta_2$.
   - If a variable $x$ is present in only one context, it will be annotated with $top$ in $Delta_1 lub Delta_2$.
   - If a path $p.f$ is missing in one of the two contexts, we can just consider the annotation in the class declaration.
-- $Delta sect.dot Delta_1$ is used to remove the paths that are locally declared in $Delta$
+- $Delta triangle.filled.small.l Delta_1$ is used to maintain the correct context when exiting a scope.
+  - $Delta$ represents the resulting context of the inner scope.
+  - $Delta_1$ represents the context at the beginning of the scope.
+  - The result of the operation is a context where paths rooted in variable locally declared inside the scope are removed.
 - $unify(Delta, Delta_1, Delta_2)$ means that we want to unify $Delta_1$ and $Delta_2$ starting from a parent environment $Delta$.
   - A path $p$ contained in $Delta_1$ or $Delta_2$ such that $root(p) = x$ is not contained $Delta$ will not be included in the unfication.
   - The annotation of variables contained in the unfication is the least upper bound of the annotation in $Delta_1$ and $Delta_2$.
