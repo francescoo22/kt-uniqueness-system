@@ -21,8 +21,8 @@ jobs:
 
       - name: Add date to PDF
         run: |
-          for file in *.pdf; do
-            mv "$file" "$(basename "$file" .pdf)-${{ env.DATE }}.pdf"
+          for file in src/*.pdf; do
+            mv "$file" "src/$(basename "$file" .pdf)-${{ env.DATE }}.pdf"
           done
 
       - name: Upload PDF file
