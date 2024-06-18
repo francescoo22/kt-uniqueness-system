@@ -15,15 +15,21 @@ jobs:
             src/annotation-system.typ
             src/CFG-based-system.typ
 
+      - name: Get current date
+        id: date
+        run: echo "DATE=$(date +%Y-%m-%d-%H:%M | tr ':' '_')" >> $GITHUB_ENV
+
+      - name: Add date to PDF
+        run: |
+          for file in *.pdf; do
+            mv "$file" "$(basename "$file" .pdf)-${{ env.DATE }}.pdf"
+          done
+
       - name: Upload PDF file
         uses: actions/upload-artifact@v4
         with:
-          name: PDF
+          name: Kt-Uniqueness-System-${{ env.DATE }}
           path: "src/*.pdf"
-
-      - name: Get current date
-        id: date
-        run: echo "DATE=$(date +%Y-%m-%d-%H:%M)" >> $GITHUB_ENV
 
       - name: Release
         uses: softprops/action-gh-release@v1
