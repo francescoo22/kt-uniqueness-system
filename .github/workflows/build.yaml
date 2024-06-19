@@ -15,20 +15,24 @@ jobs:
             src/annotation-system.typ
             src/CFG-based-system.typ
 
-      - name: Get current date
-        id: date
-        run: echo "DATE=$(date +%Y-%m-%d-%H:%M | tr ':' '_')" >> $GITHUB_ENV
+      - name: Get build identifier
+        id: identifier
+        run: |
+          DATE=$(date +%Y-%m-%d-%H:%M | tr ':' '_')
+          BRANCH=$(git branch --show-current)
+          echo "DATE=$DATE" >> $GITHUB_ENV
+          echo "MOD=$BRANCH-$DATE" >> $GITHUB_ENV
 
-      - name: Add date to PDF
+      - name: Add identifier to PDF
         run: |
           for file in src/*.pdf; do
-            mv "$file" "src/$(basename "$file" .pdf)-${{ env.DATE }}.pdf"
+            mv "$file" "src/$(basename "$file" .pdf)-${{ env.MOD }}.pdf"
           done
 
       - name: Upload PDF file
         uses: actions/upload-artifact@v4
         with:
-          name: Kt-Uniqueness-System-${{ env.DATE }}
+          name: Kt-Uniqueness-System-${{ env.MOD }}
           path: "src/*.pdf"
 
       - name: Release
