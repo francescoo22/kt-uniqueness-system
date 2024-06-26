@@ -7,109 +7,85 @@ but adapted to fit the CFG representation of Kotlin.
 
 The key gap between the CFG version and the type rules is at the function call.
 Type checking at function calls need adjustment so that it can be done in control flow order.
-The support for recursive function all is alse missing is previous typing rules.
+The support for nested function call is alse missing is previous typing rules.
 
 == Formalization
+#grid(
+  columns: (auto, auto),
+  column-gutter: 2em,
+  row-gutter: 1em,
+  [*CFG nodes not covered in Grammar*],[*Context*],
+  frame-box(
+    $
+      af &::= unique | shared \
+      beta &::= dot | borrowed \
+      p &::= x | p.f \
+      "TA" &::= "$"i := p, "TA for temp assignment" \
+      "F" &::= f("$"1: af beta, ..., "$"n: af beta): af \
+      "Join" &::= j \
+    $
+  ),
+  frame-box(
+    $
+      alpha &::= unique | shared | top \
+      beta &::= dot | borrowed \
+      Delta &::= dot | p : alpha beta, Delta \
+      Gamma &::= dot | i : Delta, Gamma
+    $
+  )
+)
+
 
 We follow the original lattice for control flow analysis.
 #figure(image(width: 25%, "./img/lattice.svg"), caption: [Lattice in Control Flow Analysis])<CFA-lattice>
 
-The context for CFA $Gamma$ is defined as: a mapping from path to the lattice:
-$ Gamma : p -> U $, $U$ for uniqueness and borrowing level.
+In Kotlin CFG, $"$"i = "eval" e$, is a common pattern that appears everywhere,
+we distinguish this case with assignment statement and call this temp assignment.
+We introduce an extra context $Gamma$ for CFA to track aliasing happening at temp assignment.
+Notice that $Gamma$ is a list of aliasing information, as we might have multiple aliasing possibilities.
 
-In Kotlin CFG, $"$"i = "eval" e$, is a common pattern that appears everywhere, we distinguish this case with assignment statement when rhs is a path: define context $Delta$ for case $"$"i = "eval" p$ temp variables to the corresponding path and lattice, to make it simple here, we define it as a list:
-$ Delta : (i, p, U) $
-When the rhs is not a variable or path, we store $(i, *, U)$.
-
-Rule for CFA are as follows on different nodes in CFG:
-#prooftree(
-  axiom($Delta'= (i, p, Gamma(p)) :: Delta$),
-  rule(label: "Temp assignment path", $Gamma, Delta tack.r "$"i := p tack.l Gamma, Delta'$),
+Rule for CFA are as follows on different nodes in CFG that does not appear in the grammar.
+#display-rules(row-size: 1,
+prooftree(
+  axiom($Gamma'= i: (p, Delta(p), dot), Gamma$),
+  rule(label: "Temp assignment path", $Gamma, Delta tack.r "$"i := p tack.l Gamma', Delta$),
+),
+prooftree(
+  axiom($Gamma'= i:, Gamma(j), Gamma$),
+  rule(label: "Temp assignment temp", $Gamma, Delta tack.r "$"i := "$"j tack.l Gamma', Delta$),
+),
+prooftree(
+  axiom($forall i, j: exists p_i in Gamma("$"i) p_j in Gamma("$"j), p_i subset.sq p_j => (a_i^m = a_j^m = shared)$),
+  axiom($Gamma' Delta' = "normalize'" Gamma Delta$),
+  axiom($Lub Gamma'("$"i).alpha beta <= alpha_i beta_i$),
+  rule(n: 3, label: "Function call", $Gamma, Delta tack.r f("$"1: alpha_1 beta_1, ..., "$"n: alpha_n beta_n) tack.l Gamma', Delta'$),
+),
+prooftree(
+  axiom($Delta' = "unify "Delta_1, Delta_2$),
+  axiom($Gamma' = "$2": Gamma_1("$2") lub' Gamma_2("$2")$),
+  rule(n:2, label: "join",
+    $Gamma_1, Delta_1, Gamma_2, Delta_2 tack.r "$result" = "$2" tack.l Gamma', Delta'$),
+)
 )
 
-#prooftree(
-  axiom($Delta'= (i*, "Eval"(f)) :: Delta$),
-  rule(label: "Temp assignment non-path", $Gamma, Delta tack.r "$"i := f tack.l Gamma, Delta'$),
+=== Unification
+Unification for full $Gamma$ is never needed, as all temp assignment variables are local.
+
+$lub' Delta_1 Delta_2$ does pointwise $lub$, but *keep* $x: alpha_x beta_x$ if it appears in only one of $Delta_1$ or $Delta_2$.
+
+=== Normalization with $Gamma$ and $Delta$
+#display-rules(
+    prooftree(
+      axiom($Delta' = "normalize"(p_1: alpha_1 beta_1, ..., p_n: alpha_n beta_n)$),
+      rule(label: "N-Finish", $Gamma, Delta tack.r "normalize"'(p_1: alpha_1 beta_1, ..., p_n: alpha_n beta_n) = Delta'$)
+    ),
+    prooftree(
+      axiom($Lub_(k in Gamma("$"i.p)) "normalize"'(p_1: alpha_1 beta_1, ..., k: alpha_1 beta_1, ..., "$"n: alpha_n beta_n)$),
+      rule(label: "N-rec", $Gamma, Delta tack.r "normalize'"(p_1: alpha_1 beta_1, ... "$"i: alpha_i beta_i, ... "$"n: alpha_n beta_n)$),
+    ),
 )
 
-#prooftree(
-  axiom($Delta("$"i).3 <= "U"i$),
-  axiom("Do normalization with alias infomation in Delta"),
-  rule(n: 2, label: "Function call", $Gamma, Delta tack.r f("$"1: "U"1, ..., "$"n: "U"n) tack.l Gamma', Delta$),
-)
-
-#prooftree(
-  axiom($"Unification "Gamma_1, Gamma_2$),
-  axiom($Delta'= ("result", ("$"1, "$"2), Gamma("$"1) lub Gamma("$"2)) :: Delta$),
-  rule(n:2, label: "CFG Join Node for Expression(if/when)", $Gamma_1, Delta_1 tack.r "$result" := "$2" join Gamma_2, Delta_2 tack.r "$result" := "$2" tack.l Gamma', Delta'$),
-)
-
-Here $("$"1, "$"2)$ means we keep both alias, when one of them is $*$, we keep the other one.
-
-== Examples for recursive function call
-- Example with multiple call with unique
-```kt
-// Should report error
-fun f(x: unique, y: unique)
-fun use_f(x: unique) {
-  f (x, x)
-}
-```
-- Example with multiple call with shared
-```kt
-// Should report error
-fun f(x: shared, y: unique)
-fun use_f(x: unique) {
-  f (x, x)
-}
-```
-- Example with unique and borrowed
-```kt
-// Should report error
-fun f(x: unique, y: b) // b for either shared or unique borrow
-fun use_f(x: unique) {
-  f (x, x)
-}
-```
-- Example with unique and nested borrowed
-```kt
-// Should pass
-fun f(x: unique, y) // no notation for any uniqueness or borrowing
-fun g(x: b)
-fun use_f(x: unique) {
-  f (x, g(x))
-}
-```
-- Example with unique and nested share
-```kt
-// Should report error
-fun f(x: unique, y)
-fun g(x: shared)
-fun use_f(x: unique) {
-  f (x, g(x))
-}
-```
-- Example with Shared and nested unique or borrowed unique
-```kt
-// Should report error for first, but not second
-fun f(x: shared, y)
-fun g1(x: unique)
-fun g2(x: b unique)
-fun use_f(x: unique) {
-  f (x, g1(x))
-  f (x, g2(x))
-}
-```
-- Example with b unique and anything
-```kt
-// Should report error
-fun f(x: b unique, y)
-fun use_f(x: unique) {
-  f (x, x)
-}
-```
-
-== CFG for function call
+== Examples for nested function calls
 
 CFG for function call is represented first eval the arguments sequentially and then call the function.
 Consider the following example:
@@ -140,8 +116,6 @@ fun use_f(x: Unique) {
 }
 ```
 
-Ths issue here is that Kotlin CFA might not be able to distinguish normal assignment and this particular case.
-Consider the following example:
 ```kt
 fun f(x: Unique, y)
 fun g(x: b Unique)
@@ -156,23 +130,12 @@ $ &"$1" := x \
   &-> "$3" := g("$2") \
   &-> "$result" := f("$1", "$3") $
 
-Suppose we use the rules for assignment here:
-
-$ & &{x: "Unique"} \
-  &"$1" := x &{x: top, "$1": "Unique"} \ 
-  &-> "$2" := x &{"Error"} \
-  &-> "$3" := g("$2") \
-  &-> "$result" := f("$1", "$3") $
-
-While what we really want is:
+From our CFA, we have
 $ & &{x: "Unique"} \
   &"$1" := x &{x: "Unique", "$1": "Unique"} \ 
   &-> "$2" := x &{x : "Unique", "$2": "Unique"} \
   &-> "$3" := g("$2") &{x : "Unique", "$2": "Unique", "$3": bot}\
   &-> "$result" := f("$1", "$3") &{x: top} $
 
-Three possible ways to solve this:
-1. Is it possible to infer this case
-2. SSA this case
-3. Fully disable this behavior
+== Examples with multiple branches
 
