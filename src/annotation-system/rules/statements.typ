@@ -4,7 +4,7 @@
 // ****************** Statements typing rules ******************
 
 #let Decl = prooftree(
-  axiom(""),
+  axiom($x in.not Delta$),
   rule(label: "Decl", $mid(var x), x : top$),
 )
 
