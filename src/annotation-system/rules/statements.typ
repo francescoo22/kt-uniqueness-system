@@ -134,7 +134,7 @@
   let a1 = $mtype(m) = alpha_0^m, beta_0^m, ..., alpha_n^m beta_n^m -> alpha_r$
   let a2 = $Delta(p) = alpha$
   let a3 = $alpha rel alpha_r$
-  let a4 = $Delta tr std(p)$
+  let a4 = $Delta tr std(p, alpha_r)$
   let a5 = $forall 0 <= i, j <= n : (alpha_i beta_i != unique) => Delta tr std(p_i, alpha_i beta_i)$
   prooftree(
     stacked-axiom(
