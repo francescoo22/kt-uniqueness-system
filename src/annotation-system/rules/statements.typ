@@ -109,7 +109,7 @@
   let a1 = $mtype(m) = alpha_0^m, beta_0^m, ..., alpha_n^m beta_n^m -> alpha_r$
   let a2 = $forall 0 <= i <= n : Delta tr std(p_i, alpha_i^m beta_i^m)$
   let a3 = $forall 0 <= i, j <= n : (i != j and p_i = p_j) => alpha_i^m = shared$
-  let a4 = $forall 0 <= i, j <= n : p_i subset.sq p_j => (Delta(p_j) = shared or a_i^m = a_j^m = shared)$
+  let a4 = $forall 0 <= i, j <= n : p_i subset.sq p_j => (Delta(p_j) = shared or alpha_i^m = alpha_j^m = shared)$
   // Note: If we have more permissions than std, by passing to borrowed we should be able to keep those permissions. Anyway this is probably going to be false in the future so it's ok to keep it as it is
   let a5 = $Delta minus.circle (p_0, ..., p_n) = Delta'$
   let a6 = $forall 0 <= i <= n : alpha_i beta_i ~> alpha_i^m beta_i^m ~> alpha'_i beta'_i$
