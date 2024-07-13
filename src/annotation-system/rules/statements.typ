@@ -9,8 +9,9 @@
 )
 
 #let Assign-Null = prooftree(
+  axiom($Delta(p) = alpha beta$),
   axiom($Delta[p |-> unique] = Delta'$),
-  rule(label: "Assign-Null", $mid(p = null)'$),
+  rule(n:2, label: "Assign-Null", $mid(p = null)'$),
 )
 
 // TODO: in the case where the lhs is borrowed, should we require std?
