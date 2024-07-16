@@ -140,7 +140,6 @@ If $p_1 subset.sq p_2$ holds, we say that
   Ctx-Lub-Empty, Ctx-Lub-Sym,
   Ctx-Lub-1, "",
   Ctx-Lub-2, "",
-  Ctx-Lub-3, "",
   Remove-Locals-Base, Remove-Locals-Keep,
   Remove-Locals-Discard, "",
   Unify, ""
