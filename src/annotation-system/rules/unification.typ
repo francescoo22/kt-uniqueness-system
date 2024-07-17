@@ -34,7 +34,7 @@
 
 #let Remove-Locals-Keep = prooftree(
   axiom($root(p) = x$),
-  axiom($Delta_1 inangle(x) = alpha beta$),
+  axiom($Delta_1 inangle(x) = alpha' beta'$),
   axiom($Delta triangle.filled.small.l Delta_1 = Delta'$),
   rule(n:3, label: "Remove-Locals-Keep", $p : alpha beta, Delta triangle.filled.small.l Delta_1 = p : alpha beta, Delta'$),
 )
@@ -43,7 +43,7 @@
   axiom($root(p) = x$),
   axiom($x in.not Delta_1$),
   axiom($Delta triangle.filled.small.l Delta_1 = Delta'$),
-  rule(n:3, label: "Remove-Locals-Keep", $p : alpha beta, Delta triangle.filled.small.l Delta_1 = Delta'$),
+  rule(n:3, label: "Remove-Locals-Discard", $p : alpha beta, Delta triangle.filled.small.l Delta_1 = Delta'$),
 )
 
 #let Unify = prooftree(
