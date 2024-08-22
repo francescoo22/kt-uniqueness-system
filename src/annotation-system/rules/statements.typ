@@ -101,8 +101,9 @@
   axiom($Delta(p) = alpha' beta'$),
   axiom($Delta tr m(overline(p)) tl Delta_1$),
   axiom($mtype(m) = alpha_0 beta_0, ..., alpha_n beta_n -> alpha$),
+  axiom($(beta' = borrowed) => (alpha = unique)$),
   axiom($Delta_1[p |-> alpha] = Delta'$),
-  rule(n:4, label: "Assign-Call", $mid(p = m(overline(p)))'$)
+  rule(n:5, label: "Assign-Call", $mid(p = m(overline(p)))'$)
 )
 
 #let Call = {
